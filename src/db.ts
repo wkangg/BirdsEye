@@ -18,7 +18,6 @@ const markerSchema = new mongoose.Schema({
         of: Number
     }
 });
-const Marker = mongoose.model('Marker', markerSchema);
 
 const userSchema = new mongoose.Schema({
     userID: { type: String, required: true }, // sub from auth0
@@ -27,6 +26,8 @@ const userSchema = new mongoose.Schema({
         of: String
     }
 });
-const User = mongoose.model('User', userSchema);
+
+export const Marker = mongoose.model('Marker', markerSchema);
+export const User = mongoose.model('User', userSchema);
 
 // TODO: make it so that when you move the map, it loads schemas without x amount of long and lat from the marker
