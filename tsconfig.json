@@ -1,0 +1,49 @@
+{
+	"compilerOptions": {
+		// Type Checking
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"exactOptionalPropertyTypes": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitOverride": true,
+		"noImplicitReturns": true,
+		"noPropertyAccessFromIndexSignature": false,
+		"noUncheckedIndexedAccess": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"strict": true,
+		"useUnknownInCatchVariables": false,
+
+		// Modules
+		"allowArbitraryExtensions": false,
+		"allowImportingTsExtensions": true,
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"resolveJsonModule": true,
+		"resolvePackageJsonExports": true,
+		"resolvePackageJsonImports": true,
+
+		// Emit
+		"declaration": true,
+		"declarationMap": true,
+		"importHelpers": true,
+		"noEmitHelpers": true,
+		"removeComments": false,
+		"sourceMap": false,
+		"noEmit": true,
+
+		// Interop Constraints
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"isolatedModules": true,
+
+		// Language and Environment
+		"experimentalDecorators": true,
+		"lib": ["ESNext"],
+		"target": "ESNext",
+		"useDefineForClassFields": true,
+
+		"typeRoots": ["./node_modules/@types"]
+	}
+}

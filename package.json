@@ -1,0 +1,35 @@
+{
+  "name": "birdseye",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "repository": "github:wkangg/BirdsEye",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "nodemon --exec \"bun run start\" -e html,css,js,json,png,ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "engines": {
+    "node": ">=21.1.0"
+  },
+  "author": "William Kang <william@wkang.ca>",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "@stylistic/eslint-plugin": "^2.13.0",
+    "@types/body-parser": "^1.19.5",
+    "@types/bun": "^1.1.17",
+    "@types/express": "^5.0.0",
+    "eslint": "^9.18.0",
+    "eslint-plugin-n": "^17.15.1",
+    "eslint-plugin-unicorn": "^56.0.1",
+    "globals": "^15.14.0",
+    "nodemon": "^3.1.9",
+    "typescript-eslint": "^8.20.0"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "express": "^4.21.2"
+  }
+}
