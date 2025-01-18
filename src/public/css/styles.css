@@ -39,6 +39,10 @@ img {
     backdrop-filter: blur(3.75px) brightness(0.4);
 }
 
+#photoContainer {
+    background-color: #AE9674;
+}
+
 .mapboxgl-popup-content {
     color: black;
 }

@@ -149,8 +149,8 @@ const constrainToAspectRatio = (x, y, aspectRatio) => {
 const resizeAddPhotoBtn = () => {
     if (!addPhotoBtn) return;
     setTimeout(() => {
-        const x = window.innerWidth/1.5 - window.innerWidth*0.15;
-        const y = window.innerHeight/2 - window.innerHeight*0.375;
+        const x = window.innerWidth/1.625;
+        const y = window.innerHeight/7;
         addPhotoBtn.style.left = x + 'px';
         addPhotoBtn.style.top = y + 'px';
         const constrained = constrainToAspectRatio(window.innerWidth*0.3, window.innerHeight*0.75, 24/34);
