@@ -3,13 +3,14 @@ let pos;
 mapboxgl.accessToken = 'pk.eyJ1Ijoid2thbmdnIiwiYSI6ImNtNjFtdGFkbjBvejQybm9rdXpiYnYwc2MifQ.b0RaasJ_7-SKrZ4ou0HSGw';
 const map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/standard',
+    style: 'mapbox://styles/wkangg/cm61w732800e201s2hbqi9sqa',
     center: [-79.3985, 43.664],
     zoom: 12
 });
 
 const menu = document.querySelector('#menu');
-const blur = document.querySelector('#blur');
+const prompt = menu.querySelector('#prompt');
+const blurElement = document.querySelector('#blur');
 const toastError = err => {
     if (!err) return;
     const message = err.stack ?? err.message ?? err;
@@ -40,6 +41,19 @@ navigator.geolocation.getCurrentPosition(position => {
     }
 }, error => toastError(error));
 
+const escapeHTML = str => str
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('\'', '&#039;');
+
+const objectIdToDate = objectId => {
+    const hexTimestamp = objectId.slice(0, 8);
+    const timestamp = parseInt(hexTimestamp, 16);
+    return new Date(timestamp * 1000);
+};
+
 const existingMarkers = [];
 const updateMarkers = async () => {
     fetch('/api/getMarkers')
@@ -65,21 +79,7 @@ const updateMarkers = async () => {
                     toggleMenu();
                 });
 
-                const popupContent = document.createElement('div');
-                const photo = document.createElement('img');
-                // photo.src = location.photo;
-                photo.style.width = '150px';
-
-                const prompt = document.createElement('p');
-                prompt.textContent = location.prompt;
-
-                popupContent.append(photo);
-                popupContent.append(prompt);
-
-                const popup = new mapboxgl.Popup({ offset: 25 })
-                    .setDOMContent(popupContent);
-
-                marker.setPopup(popup);
+                prompt.innerHTML = `${escapeHTML(location.prompt)}<br><span class="text-2xl">${objectIdToDate(location._id).toLocaleDateString('en-US')}</span>`;
             });
         })
         .catch(error => toastError(error));
@@ -87,9 +87,9 @@ const updateMarkers = async () => {
 
 const toggleMenu = () => {
     menu.classList.toggle('-translate-x-full');
-    blur.classList.toggle('hidden');
+    blurElement.classList.toggle('hidden');
 };
-blur.addEventListener('click', toggleMenu);
+blurElement.addEventListener('click', toggleMenu);
 
 updateMarkers();
 setInterval(updateMarkers, 60000);

@@ -6,7 +6,7 @@ import bodyParser from 'body-parser';
 import { setupDB } from './db.ts';
 import { initRoutes } from './routes.ts';
 
-if (!process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY || !process.env.S3_ENDPOINT || !process.env.S3_BUCKET || !process.env.AUTH0_DOMAIN || !process.env.AUTH0_SECRET || !process.env.AUTH0_CLIENT_ID)
+if (!process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY || !process.env.S3_ENDPOINT || !process.env.S3_BUCKET || !process.env.AUTH0_DOMAIN || !process.env.AUTH0_SECRET || !process.env.AUTH0_CLIENT_ID || !process.env.MONGO_DB_URI)
     throw new Error('Missing environment variables');
 
 export const app: express.Express = express();

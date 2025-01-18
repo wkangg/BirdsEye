@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap');
+
 * {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -23,6 +25,7 @@ img {
 #menu {
     background-color: #272626;
     color: white;
+    font-family: "Patrick Hand", system-ui, -apple-system, sans-serif;
 }
 
 #blur {

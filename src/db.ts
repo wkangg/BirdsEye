@@ -13,10 +13,7 @@ const markerSchema = new mongoose.Schema({
     lat: { type: Number, required: true },
     lng: { type: Number, required: true },
     prompt: { type: String, required: true },
-    lb: { // object of name: votes
-        type: Map,
-        of: Number
-    }
+    likes: { type: Number, default: 0 }
 });
 
 const userSchema = new mongoose.Schema({
