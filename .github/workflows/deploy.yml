@@ -19,6 +19,7 @@ jobs:
           key: ${{ secrets.ORACLE_SSH_KEY }}
           script: |
             cd /home/opc/snapquest
+            git reset --hard HEAD
             git pull origin master
             /home/opc/.bun/bin/bun install
             sudo systemctl daemon-reload
