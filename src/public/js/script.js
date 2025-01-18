@@ -109,6 +109,7 @@ const updateMarkers = async () => {
 
                     const bounding = customMarker.getBoundingClientRect();
                     addPhotoBtn = document.createElement('img');
+                    addPhotoBtn.classList.add('addBtnPurge');
                     addPhotoBtn.style.cursor = 'pointer';
                     addPhotoBtn.style.zIndex = '30';
                     addPhotoBtn.src = '/assets/addphoto.svg';
@@ -121,11 +122,11 @@ const updateMarkers = async () => {
                     addPhotoBtn.style.width = '24px';
                     addPhotoBtn.style.height = '34px';
                     document.body.append(addPhotoBtn);
-                    addPhotoBtn.style.transition = 'all 0.5s ease-in-out';
+                    addPhotoBtn.style.transition = 'all 0.4s ease-in-out';
 
                     setTimeout(() => {
                         addPhotoBtn.addEventListener('click', addPhotoPressed);
-                    }, 500);
+                    }, 400);
                     resizeAddPhotoBtn();
                 });
             });
@@ -175,6 +176,7 @@ const toggleMenu = event => {
     blurElement.classList.toggle('hidden');
     if (addPhotoBtn) {
         setTimeout(() => {
+            addPhotoBtn.style.transition = 'all 0.3s ease-in-out';
             const bounding = lastClickedMarker.getBoundingClientRect();
             const translation = lastClickedMarker.style.transform.match(/translate\(([^,]+),([^,]+)\)/);
             const translationX = translation[1].slice(0, -2);
@@ -187,7 +189,9 @@ const toggleMenu = event => {
         setTimeout(() => {
             addPhotoBtn.remove();
             addPhotoBtn = null;
-        }, 500);
+            for (const child of document.querySelectorAll('.addBtnPurge'))
+                child.remove();
+        }, 300);
     }
 };
 blurElement.addEventListener('click', toggleMenu);
