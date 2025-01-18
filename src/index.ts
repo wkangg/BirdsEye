@@ -3,6 +3,7 @@ import express from 'express';
 import { auth } from 'express-openid-connect';
 import multer from 'multer';
 import bodyParser from 'body-parser';
+import { setupDB } from './db.ts';
 import { initRoutes } from './routes.ts';
 
 if (!process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY || !process.env.S3_ENDPOINT || !process.env.S3_BUCKET || !process.env.AUTH0_DOMAIN || !process.env.AUTH0_SECRET || !process.env.AUTH0_CLIENT_ID)
@@ -30,6 +31,7 @@ app.use(auth({
 app.use(bodyParser.json());
 app.use(express.static('src/public'));
 
+setupDB();
 initRoutes();
 
 const port = process.env.PORT ?? 3000;

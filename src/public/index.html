@@ -14,11 +14,13 @@
     <script src="js/script.js" defer></script>
 </head>
 <body>
-    <main class="flex flex-col sm:flex-row sm:gap-4 h-screen">
-        <div class="basis-2/5 sm:h-full order-last sm:order-first py-4 sm:px-0 sm:py-2 overflow-hidden sm:flex sm:flex-col">
+    <main class="flex h-screen">
+        <div class="basis-1/3 p-4">
             <img src="assets/logo.png" alt="SnapQuest Logo" class="h-12 mx-auto sm:h-16">
         </div>
-        <div id="map" class="h-[60vh] basis-3/5 sm:h-screen"></div>
+
+        <div id="map" class="basis-2/3 p-4"></div>
+
         <div id="leaderboard-widget">
             <h2>Leaderboard</h2>
             <ol id="leaderboard-list"></ol>

@@ -71,13 +71,14 @@ locations.forEach(location => {
     const photo = document.createElement('img');
     photo.src = location.photo;
     photo.style.width = '150px';
+
     const prompt = document.createElement('p');
     prompt.textContent = location.prompt;
+
     const upvoteButton = document.createElement('button');
     upvoteButton.textContent = 'Upvote';
 
     const hasVotedKey = `hasVoted_${location.id}`;
-
     upvoteButton.addEventListener('click', () => {
         if (localStorage.getItem(hasVotedKey)) {
             alert('You have already voted for this location!');
