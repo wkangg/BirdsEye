@@ -18,11 +18,8 @@ jobs:
           username: ${{ secrets.ORACLE_USER }}
           key: ${{ secrets.ORACLE_SSH_KEY }}
           script: |
-            cd /home/opc/SnapQuest
-            git pull origin main
-            # If your bun path is /home/opc/.bun/bin/bun, use that exact path:
+            cd /home/opc/snapquest
+            git pull origin master
             /home/opc/.bun/bin/bun install
-            # Reload systemd, just in case the service file changed:
             sudo systemctl daemon-reload
-            # Restart the snapquest service to pick up new changes:
             sudo systemctl restart snapquest
