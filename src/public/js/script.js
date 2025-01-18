@@ -1,4 +1,4 @@
-let pos;
+let pos, addPhotoBtn;
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoid2thbmdnIiwiYSI6ImNtNjFtdGFkbjBvejQybm9rdXpiYnYwc2MifQ.b0RaasJ_7-SKrZ4ou0HSGw';
 const map = new mapboxgl.Map({
@@ -54,6 +54,10 @@ const objectIdToDate = objectId => {
     return new Date(timestamp * 1000);
 };
 
+const addPhotoPressed = () => {
+    console.log('pressed');
+};
+
 const existingMarkers = [];
 const updateMarkers = async () => {
     fetch('/api/getMarkers')
@@ -76,10 +80,41 @@ const updateMarkers = async () => {
                 existingMarkers.push(marker);
 
                 customMarker.addEventListener('click', () => {
+                    prompt.innerHTML = `${escapeHTML(location.prompt)}<br><span class="text-2xl">${objectIdToDate(location._id).toLocaleDateString('en-US')}</span>`;
                     toggleMenu();
-                });
 
-                prompt.innerHTML = `${escapeHTML(location.prompt)}<br><span class="text-2xl">${objectIdToDate(location._id).toLocaleDateString('en-US')}</span>`;
+                    const bounding = customMarker.getBoundingClientRect();
+                    addPhotoBtn = document.createElement('img');
+
+                    console.log(bounding);
+                    addPhotoBtn.style.pointerEvents = 'none';
+                    addPhotoBtn.style.aspectRatio = '34/24';
+                    addPhotoBtn.style.zIndex = '30';
+                    addPhotoBtn.src = '/assets/addphoto.svg';
+                    addPhotoBtn.style.position = 'fixed';
+                    const translation = customMarker.style.transform.match(/translate\(([^,]+),([^,]+)\)/);
+                    const translationX = translation[1].slice(0, -2);
+                    const translationY = translation[2].slice(0, -2);
+                    addPhotoBtn.style.left = translationX - bounding.width / 2 + 'px';
+                    addPhotoBtn.style.top = translationY - bounding.height / 2 + 'px';
+                    addPhotoBtn.style.width = '24px';
+                    addPhotoBtn.style.height = '34px';
+                    document.body.append(addPhotoBtn);
+                    addPhotoBtn.style.transition = 'all 0.5s ease-in-out';
+
+                    setTimeout(() => {
+                        const x = window.innerWidth / 1.5 - window.innerWidth*0.3 / 2;
+                        const y = window.innerHeight / 2 - window.innerHeight*0.75 / 2;
+                        addPhotoBtn.style.left = x + 'px';
+                        addPhotoBtn.style.top = y + 'px';
+                        addPhotoBtn.style.width = window.innerWidth*0.3+'px';
+                        addPhotoBtn.style.height = window.innerHeight*0.75+'px';
+                    }, 0);
+                    setTimeout(() => {
+                        addPhotoBtn.style.pointerEvents = 'auto';
+                        addPhotoBtn.addEventListener('click', addPhotoPressed);
+                    }, 500);
+                });
             });
         })
         .catch(error => toastError(error));
