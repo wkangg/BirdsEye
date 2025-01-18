@@ -80,6 +80,7 @@ imgInput.addEventListener('input', async () => {
         .finally(() => imgInput.value = '');
 });
 
+let lastClickedMarker;
 const existingMarkers = [];
 const updateMarkers = async () => {
     fetch('/api/getMarkers')
@@ -102,12 +103,13 @@ const updateMarkers = async () => {
                 existingMarkers.push(marker);
 
                 customMarker.addEventListener('click', () => {
+                    lastClickedMarker = customMarker;
                     prompt.innerHTML = `${escapeHTML(location.prompt)}<br><span class="text-2xl">${objectIdToDate(location._id).toLocaleDateString('en-US')}</span>`;
                     toggleMenu();
 
                     const bounding = customMarker.getBoundingClientRect();
                     addPhotoBtn = document.createElement('img');
-                    addPhotoBtn.style.pointerEvents = 'none';
+                    addPhotoBtn.style.cursor = 'pointer';
                     addPhotoBtn.style.zIndex = '30';
                     addPhotoBtn.src = '/assets/addphoto.svg';
                     addPhotoBtn.style.position = 'fixed';
@@ -122,8 +124,6 @@ const updateMarkers = async () => {
                     addPhotoBtn.style.transition = 'all 0.5s ease-in-out';
 
                     setTimeout(() => {
-                        addPhotoBtn.style.pointerEvents = 'auto';
-                        addPhotoBtn.style.cursor = 'pointer';
                         addPhotoBtn.addEventListener('click', addPhotoPressed);
                     }, 500);
                     resizeAddPhotoBtn();
@@ -174,8 +174,20 @@ const toggleMenu = event => {
     menu.classList.toggle('-translate-x-full');
     blurElement.classList.toggle('hidden');
     if (addPhotoBtn) {
-        addPhotoBtn.remove();
-        addPhotoBtn = null;
+        setTimeout(() => {
+            const bounding = lastClickedMarker.getBoundingClientRect();
+            const translation = lastClickedMarker.style.transform.match(/translate\(([^,]+),([^,]+)\)/);
+            const translationX = translation[1].slice(0, -2);
+            const translationY = translation[2].slice(0, -2);
+            addPhotoBtn.style.left = translationX - bounding.width / 2 + 'px';
+            addPhotoBtn.style.top = translationY - bounding.height / 2 + 'px';
+            addPhotoBtn.style.width = '24px';
+            addPhotoBtn.style.height = '34px';
+        }, 0);
+        setTimeout(() => {
+            addPhotoBtn.remove();
+            addPhotoBtn = null;
+        }, 500);
     }
 };
 blurElement.addEventListener('click', toggleMenu);
