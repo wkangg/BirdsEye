@@ -58,7 +58,7 @@ const objectIdToDate = objectId => {
 const addPhotoPressed = () => imgInput.click();
 imgInput.addEventListener('input', async () => {
     if (!imgInput.files[0]) return;
-    fetch('http://localhost:3000/api/upload', {
+    fetch('/api/upload', {
         method: 'GET'
     })
         .then(async response => {

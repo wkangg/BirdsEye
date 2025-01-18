@@ -23,7 +23,7 @@ if (app.get('env') === 'production') app.set('trust proxy', 1);
 app.use(auth({
     authRequired: false,
     auth0Logout: true,
-    baseURL: 'http://localhost:3000',
+    baseURL: app.get('env') === 'production' ? 'https://prettyplease.work/' : 'http://localhost:3000',
     clientID: process.env.AUTH0_CLIENT_ID,
     issuerBaseURL: process.env.AUTH0_DOMAIN,
     secret: process.env.AUTH0_SECRET
@@ -35,7 +35,7 @@ setupDB();
 initRoutes();
 
 const port = process.env.PORT ?? 3000;
-app.listen(port, () => console.log(`\nlistening on port ${port}\nvisit http://localhost:${port}\n----------------------------`));
+app.listen(port, () => console.log(`\nlistening on port ${port}\nvisit ${app.get('env') === 'production' ? 'https://prettyplease.work/' : 'http://localhost'}:${port}\n----------------------------`));
 
 process.on('unhandledRejection', (err: Error) => console.warn(`UNHANDLED REJECTION:\n${err.stack ?? err}`));
 process.on('uncaughtException', (err: Error) => {
