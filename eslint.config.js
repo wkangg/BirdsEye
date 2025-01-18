@@ -26,12 +26,9 @@ export default [
             globals: {
                 ...globals.browser,
                 ...globals['shared-node-browser'],
-                QCompress: 'writable',
-                QrScanner: 'writable',
-                QRCode: 'writable',
-                Toastify: 'writable',
-                APP_VERSION: 'writable',
-                VERSION_RELEASE_DATE: 'writable'
+                ...globals.es2025,
+                mapboxgl: 'readonly',
+                firebase: 'readonly'
             }
         },
         rules: {
@@ -56,6 +53,10 @@ export default [
             'n/prefer-global/url': ['error', 'always'],
             'n/prefer-promises/dns': 'error',
             'n/no-deprecated-api': 'error',
+            'n/no-unsupported-features/node-builtins': ['error', {
+                allowExperimental: true,
+                ignores: ['localStorage']
+            }],
             'no-lonely-if': 'error',
             '@stylistic/no-extra-parens': ['error', 'all'],
             '@stylistic/no-extra-semi': 'warn',
