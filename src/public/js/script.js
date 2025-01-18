@@ -58,7 +58,6 @@ const objectIdToDate = objectId => {
 const addPhotoPressed = () => imgInput.click();
 imgInput.addEventListener('input', async () => {
     if (!imgInput.files[0]) return;
-    console.log(imgInput.files[0]);
     fetch('http://localhost:3000/api/upload', {
         method: 'GET'
     })
@@ -74,7 +73,7 @@ imgInput.addEventListener('input', async () => {
                 body: imgInput.files[0]
             })
                 .then(async response => {
-                    toastError(response.ok ? 'File uploaded successfully' : await response.text());
+                    toastError(response.ok ? 'File uploaded successfully (this is temporary)' : await response.text());
                 });
         })
         .catch(error => toastError(error))
@@ -170,7 +169,8 @@ window.addEventListener('focus', resizeAddPhotoBtn, false);
 window.addEventListener('resize', redrawDebouce, false);
 document.addEventListener('fullscreenchange', resizeAddPhotoBtn, false);
 
-const toggleMenu = () => {
+const toggleMenu = event => {
+    if (event && (event.srcElement === imgInput || event.srcElement === addPhotoBtn)) return;
     menu.classList.toggle('-translate-x-full');
     blurElement.classList.toggle('hidden');
     if (addPhotoBtn) {
