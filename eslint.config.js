@@ -57,6 +57,9 @@ export default [
                 allowExperimental: true,
                 ignores: ['localStorage']
             }],
+            'n/no-missing-import': ['error', {
+                allowModules: ['bun']
+            }],
             'no-lonely-if': 'error',
             '@stylistic/no-extra-parens': ['error', 'all'],
             '@stylistic/no-extra-semi': 'warn',

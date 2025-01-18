@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <input type="file" name="file" id="file">
+    <input type="submit" value="Submit">
+
+    <script>
+        const file = document.getElementById('file');
+        const submit = document.querySelector('input[type="submit"]');
+
+        submit.addEventListener('click', () => {
+            console.log(file.files[0]);
+            const formData = new FormData();
+            formData.append('file', file.files[0]);
+
+            fetch('http://localhost:3000/api/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.body.innerHTML = data;
+            })
+            .catch(error => console.error(error));
+        });
+    </script>
+</body>
+</html>
