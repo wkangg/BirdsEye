@@ -4,10 +4,12 @@ mapboxgl.accessToken = 'pk.eyJ1Ijoid2thbmdnIiwiYSI6ImNtNjFtdGFkbjBvejQybm9rdXpiY
 const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/standard',
-    center: [-79.4, 43.6],
+    center: [-79.3985, 43.664],
     zoom: 12
 });
 
+const menu = document.querySelector('#menu');
+const blur = document.querySelector('#blur');
 const toastError = err => {
     if (!err) return;
     const message = err.stack ?? err.message ?? err;
@@ -39,57 +41,55 @@ navigator.geolocation.getCurrentPosition(position => {
 }, error => toastError(error));
 
 const existingMarkers = [];
-
-let timeout;
 const updateMarkers = async () => {
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(() => {
-        fetch(`/api/getMarkers?coords=${map.getCenter().lat},${map.getCenter().lng}`)
-            .then(async res => {
-                const markers = await res.json();
-                if (!markers) return;
-                if (markers.error) return toastError(markers.error);
+    fetch('/api/getMarkers')
+        .then(async res => {
+            const markers = await res.json();
+            if (!markers) return;
+            if (markers.error) return toastError(markers.error);
 
-                for (const exister of existingMarkers) {
-                    if (!markers.some(marker => marker._id === exister)) {
-                        const marker = document.querySelector(`#marker-${exister}`);
-                        if (marker) marker.remove();
-                    }
-                }
+            existingMarkers.forEach(marker => marker?.remove());
 
-                markers.forEach(location => {
-                    existingMarkers.push(location._id);
-                    if (existingMarkers[location._id]) return;
+            markers.forEach(location => {
+                const customMarker = document.createElement('img');
+                customMarker.src = '/assets/polaroid.svg';
 
-                    const marker = new mapboxgl.Marker()
-                        .setLngLat([location.lng, location.lat])
-                        .addTo(map);
-                    marker._element.id = `marker-${location._id}`;
+                const marker = new mapboxgl.Marker({
+                    element: customMarker
+                })
+                    .setLngLat([location.lng, location.lat])
+                    .addTo(map);
+                existingMarkers.push(marker);
 
-                    const popupContent = document.createElement('div');
-                    const photo = document.createElement('img');
-                    // photo.src = location.photo;
-                    photo.style.width = '150px';
-
-                    const prompt = document.createElement('p');
-                    prompt.textContent = location.prompt;
-
-                    const upvoteButton = document.createElement('button');
-                    upvoteButton.textContent = 'Upvote';
-
-                    popupContent.append(photo);
-                    popupContent.append(prompt);
-                    popupContent.append(upvoteButton);
-
-                    const popup = new mapboxgl.Popup({ offset: 25 })
-                        .setDOMContent(popupContent);
-
-                    marker.setPopup(popup);
+                customMarker.addEventListener('click', () => {
+                    toggleMenu();
                 });
-            })
-            .catch(error => toastError(error));
-    }, 30);
+
+                const popupContent = document.createElement('div');
+                const photo = document.createElement('img');
+                // photo.src = location.photo;
+                photo.style.width = '150px';
+
+                const prompt = document.createElement('p');
+                prompt.textContent = location.prompt;
+
+                popupContent.append(photo);
+                popupContent.append(prompt);
+
+                const popup = new mapboxgl.Popup({ offset: 25 })
+                    .setDOMContent(popupContent);
+
+                marker.setPopup(popup);
+            });
+        })
+        .catch(error => toastError(error));
 };
 
+const toggleMenu = () => {
+    menu.classList.toggle('-translate-x-full');
+    blur.classList.toggle('hidden');
+};
+blur.addEventListener('click', toggleMenu);
+
 updateMarkers();
-map.on('move', () => updateMarkers());
+setInterval(updateMarkers, 60000);
