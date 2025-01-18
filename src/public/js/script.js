@@ -11,6 +11,7 @@ const map = new mapboxgl.Map({
 const menu = document.querySelector('#menu');
 const prompt = menu.querySelector('#prompt');
 const blurElement = document.querySelector('#blur');
+const imgInput = document.querySelector('#imgInput');
 const toastError = err => {
     if (!err) return;
     const message = err.stack ?? err.message ?? err;
@@ -54,9 +55,31 @@ const objectIdToDate = objectId => {
     return new Date(timestamp * 1000);
 };
 
-const addPhotoPressed = () => {
-    console.log('pressed');
-};
+const addPhotoPressed = () => imgInput.click();
+imgInput.addEventListener('input', async () => {
+    if (!imgInput.files[0]) return;
+    console.log(imgInput.files[0]);
+    fetch('http://localhost:3000/api/upload', {
+        method: 'GET'
+    })
+        .then(async response => {
+            const data = await response.text();
+            if (response.status != 200) document.body.innerHTML = data;
+
+            fetch(data, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': imgInput.files[0].type
+                },
+                body: imgInput.files[0]
+            })
+                .then(async response => {
+                    toastError(response.ok ? 'File uploaded successfully' : await response.text());
+                });
+        })
+        .catch(error => toastError(error))
+        .finally(() => imgInput.value = '');
+});
 
 const existingMarkers = [];
 const updateMarkers = async () => {
@@ -85,10 +108,7 @@ const updateMarkers = async () => {
 
                     const bounding = customMarker.getBoundingClientRect();
                     addPhotoBtn = document.createElement('img');
-
-                    console.log(bounding);
                     addPhotoBtn.style.pointerEvents = 'none';
-                    addPhotoBtn.style.aspectRatio = '34/24';
                     addPhotoBtn.style.zIndex = '30';
                     addPhotoBtn.src = '/assets/addphoto.svg';
                     addPhotoBtn.style.position = 'fixed';
@@ -103,26 +123,60 @@ const updateMarkers = async () => {
                     addPhotoBtn.style.transition = 'all 0.5s ease-in-out';
 
                     setTimeout(() => {
-                        const x = window.innerWidth / 1.5 - window.innerWidth*0.3 / 2;
-                        const y = window.innerHeight / 2 - window.innerHeight*0.75 / 2;
-                        addPhotoBtn.style.left = x + 'px';
-                        addPhotoBtn.style.top = y + 'px';
-                        addPhotoBtn.style.width = window.innerWidth*0.3+'px';
-                        addPhotoBtn.style.height = window.innerHeight*0.75+'px';
-                    }, 0);
-                    setTimeout(() => {
                         addPhotoBtn.style.pointerEvents = 'auto';
+                        addPhotoBtn.style.cursor = 'pointer';
                         addPhotoBtn.addEventListener('click', addPhotoPressed);
                     }, 500);
+                    resizeAddPhotoBtn();
                 });
             });
         })
         .catch(error => toastError(error));
 };
 
+const constrainToAspectRatio = (x, y, aspectRatio) => {
+    const currentAspectRatio = x / y;
+
+    if (currentAspectRatio > aspectRatio) {
+        x = y * aspectRatio;
+    } else if (currentAspectRatio < aspectRatio) {
+        y = x / aspectRatio;
+    }
+
+    return { x, y };
+};
+
+const resizeAddPhotoBtn = () => {
+    if (!addPhotoBtn) return;
+    setTimeout(() => {
+        const x = window.innerWidth/1.5 - window.innerWidth*0.15;
+        const y = window.innerHeight/2 - window.innerHeight*0.375;
+        addPhotoBtn.style.left = x + 'px';
+        addPhotoBtn.style.top = y + 'px';
+        const constrained = constrainToAspectRatio(window.innerWidth*0.3, window.innerHeight*0.75, 24/34);
+        addPhotoBtn.style.width = constrained.x+'px';
+        addPhotoBtn.style.height = constrained.y+'px';
+    }, 0);
+};
+
+let timer;
+const redrawDebouce = () => {
+    if (!addPhotoBtn) return;
+    clearTimeout(timer);
+    timer = setTimeout(resizeAddPhotoBtn, 30);
+};
+
+window.addEventListener('focus', resizeAddPhotoBtn, false);
+window.addEventListener('resize', redrawDebouce, false);
+document.addEventListener('fullscreenchange', resizeAddPhotoBtn, false);
+
 const toggleMenu = () => {
     menu.classList.toggle('-translate-x-full');
     blurElement.classList.toggle('hidden');
+    if (addPhotoBtn) {
+        addPhotoBtn.remove();
+        addPhotoBtn = null;
+    }
 };
 blurElement.addEventListener('click', toggleMenu);
 
