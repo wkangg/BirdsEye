@@ -1,7 +1,7 @@
 import { app, r2 } from '../../index.ts';
 import { randomUUID } from 'node:crypto';
 
-export default app.get('/api/upload/', async (_req, res) => {
+export default app.get('/api/upload', async (_req, res) => {
     try {
         let uuid = randomUUID();
         const check = r2.file(uuid);

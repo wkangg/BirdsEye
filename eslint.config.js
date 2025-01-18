@@ -28,7 +28,7 @@ export default [
                 ...globals['shared-node-browser'],
                 ...globals.es2025,
                 mapboxgl: 'readonly',
-                firebase: 'readonly'
+                Toastify: 'readonly'
             }
         },
         rules: {
