@@ -44,5 +44,11 @@ img {
 }
 
 .mapboxgl-popup-content {
-    color: black;
+    background-color: rgba(39, 38, 38, 0.9);
+}
+
+.mapboxgl-popup-tip {
+    border-top-color: transparent;
+    background-color: transparent;
+    border: none;
 }

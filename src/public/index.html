@@ -25,33 +25,27 @@
             <img src="assets/logo.png" alt="SnapQuest Logo" class="h-12 mx-auto sm:h-16" draggable="false">
 
             <p id="prompt" class="mt-6 sm:h-16 mr-0 mx-auto text-3xl text-right"><br><span class="text-2xl"></span></p>
-            <div id="photoContainer" class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3 p-4">
+            <div id="photoContainer" class="mt-4 flex flex-wrap justify-center gap-6 p-4">
                 <!-- Polaroid 1 -->
-                <div class="relative flex flex-col items-center">
-                    <div class="relative w-32 h-40 bg-center bg-no-repeat bg-contain" style="background-image: url('assets/polaroid.svg');">
-                        <div class="absolute inset-10 w-16 h-20 bg-gray-200 overflow-hidden">
-                            <img id="polaroid1Image" src="" alt="Polaroid 1" class="w-full h-full object-contain">
-                        </div>
+                <div id="polaroid1" class="relative flex flex-col items-center bg-white shadow-lg rounded-lg overflow-hidden p-4">
+                    <div class="relative bg-gray-200 overflow-hidden">
+                        <img id="polaroid1Image" src="" alt="Polaroid 1" class="w-auto h-auto max-w-full max-h-full">
                     </div>
                     <p class="mt-2 text-center text-sm font-semibold">Polaroid 1</p>
                 </div>
                 
                 <!-- Polaroid 2 -->
-                <div class="relative flex flex-col items-center">
-                    <div class="relative w-32 h-40 bg-center bg-no-repeat bg-contain" style="background-image: url('assets/polaroid.svg');">
-                        <div class="absolute inset-10 w-16 h-20 bg-gray-200 overflow-hidden">
-                            <img id="polaroid2Image" src="" alt="Polaroid 2" class="w-full h-full object-contain">
-                        </div>
+                <div id="polaroid2" class="relative flex flex-col items-center bg-white shadow-lg rounded-lg overflow-hidden p-4">
+                    <div class="relative bg-gray-200 overflow-hidden">
+                        <img id="polaroid2Image" src="" alt="Polaroid 2" class="w-auto h-auto max-w-full max-h-full">
                     </div>
                     <p class="mt-2 text-center text-sm font-semibold">Polaroid 2</p>
                 </div>
                 
                 <!-- Polaroid 3 -->
-                <div class="relative flex flex-col items-center">
-                    <div class="relative w-32 h-40 bg-center bg-no-repeat bg-contain" style="background-image: url('assets/polaroid.svg');">
-                        <div class="absolute inset-10 w-16 h-20 bg-gray-200 overflow-hidden">
-                            <img id="polaroid3Image" src="" alt="Polaroid 3" class="w-full h-full object-contain">
-                        </div>
+                <div id="polaroid3" class="relative flex flex-col items-center bg-white shadow-lg rounded-lg overflow-hidden p-4">
+                    <div class="relative bg-gray-200 overflow-hidden">
+                        <img id="polaroid3Image" src="" alt="Polaroid 3" class="w-auto h-auto max-w-full max-h-full">
                     </div>
                     <p class="mt-2 text-center text-sm font-semibold">Polaroid 3</p>
                 </div>
@@ -64,7 +58,6 @@
                     Browse Images
                 </button>
             </div>
-            
         </div>
         <div id="blur" class="hidden">
             <input class="hidden" id="imgInput" type="file" accept="image/*">

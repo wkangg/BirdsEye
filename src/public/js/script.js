@@ -102,6 +102,14 @@ const updateMarkers = async () => {
                     .addTo(map);
                 existingMarkers.push(marker);
 
+                // Create a popup
+                const popup = new mapboxgl.Popup({
+                    closeButton: false,
+                    closeOnClick: false
+                }).setText(location.prompt);
+
+                customMarker.addEventListener('mouseenter', () => popup.setLngLat([location.lng, location.lat]).addTo(map));
+                customMarker.addEventListener('mouseleave', () => popup.remove());
                 customMarker.addEventListener('click', () => {
                     lastClickedMarker = customMarker;
                     prompt.innerHTML = `${escapeHTML(location.prompt)}<br><span class="text-2xl">${objectIdToDate(location._id).toLocaleDateString('en-US')}</span>`;
@@ -196,5 +204,5 @@ const toggleMenu = event => {
 };
 blurElement.addEventListener('click', toggleMenu);
 
-updateMarkers();
+map.on('load', updateMarkers);
 setInterval(updateMarkers, 60000);
