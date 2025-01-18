@@ -6,16 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </head>
 <body>
     <div id="map"></div>
-    <div id="leaderboard">
+    <div id="leaderboard-widget">
         <h2>Leaderboard</h2>
         <ol id="leaderboard-list"></ol>
     </div>
 
     <script src="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js"></script>
     <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            databaseURL: "https://uofthacks-f093a-default-rtdb.firebaseio.com/"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         mapboxgl.accessToken = 'pk.eyJ1Ijoid2thbmdnIiwiYSI6ImNtNjFtdGFkbjBvejQybm9rdXpiYnYwc2MifQ.b0RaasJ_7-SKrZ4ou0HSGw';
         const map = new mapboxgl.Map({
             container: 'map',
@@ -29,32 +38,51 @@
                 id: 'location1',
                 coordinates: [-79.399, 43.6607],
                 photo: 'https://via.placeholder.com/150',
-                prompt: 'This is a placeholder prompt for the first location.',
-                votes: 0
+                prompt: 'This is a placeholder prompt for the first location.'
             },
             {
                 id: 'location2',
                 coordinates: [-79.395, 43.659],
                 photo: 'https://via.placeholder.com/150',
-                prompt: 'This is a placeholder prompt for the second location.',
-                votes: 0
+                prompt: 'This is a placeholder prompt for the second location.'
             }
         ];
 
-        function updateLeaderboard() {
-            const leaderboard = document.getElementById('leaderboard-list');
-            leaderboard.innerHTML = '';
+        // Initialize votes in Firebase if not already set
+        locations.forEach(location => {
+            db.ref(`locations/${location.id}`).once('value').then(snapshot => {
+                if (!snapshot.exists()) {
+                    db.ref(`locations/${location.id}`).set({ votes: 0 });
+                }
+            });
+        });
 
-            locations
-                .sort((a, b) => b.votes - a.votes)
-                .forEach(location => {
-                    const li = document.createElement('li');
-                    li.textContent = `${location.prompt} - ${location.votes} votes`;
-                    leaderboard.appendChild(li);
+        function updateLeaderboard() {
+            db.ref('locations').once('value', snapshot => {
+                const leaderboard = document.getElementById('leaderboard-list');
+                leaderboard.innerHTML = '';
+
+                const locationsData = [];
+                snapshot.forEach(childSnapshot => {
+                    const data = childSnapshot.val();
+                    const id = childSnapshot.key;
+                    const location = locations.find(loc => loc.id === id);
+                    if (location) {
+                        locationsData.push({ ...location, votes: data.votes });
+                    }
                 });
+
+                locationsData
+                    .sort((a, b) => b.votes - a.votes)
+                    .forEach(location => {
+                        const li = document.createElement('li');
+                        li.textContent = `${location.prompt} - ${location.votes} votes`;
+                        leaderboard.appendChild(li);
+                    });
+            });
         }
 
-        locations.forEach((location, index) => {
+        locations.forEach(location => {
             const marker = new mapboxgl.Marker()
                 .setLngLat(location.coordinates)
                 .addTo(map);
@@ -67,15 +95,14 @@
             prompt.textContent = location.prompt;
             const upvoteButton = document.createElement('button');
             upvoteButton.textContent = 'Upvote';
-            
-            // Check if the user has already voted for this location
+
             const hasVotedKey = `hasVoted_${location.id}`;
 
             upvoteButton.onclick = () => {
                 if (!localStorage.getItem(hasVotedKey)) {
-                    location.votes++;
-                    localStorage.setItem(hasVotedKey, 'true'); // Mark as voted
-                    updateLeaderboard();
+                    const locationRef = db.ref(`locations/${location.id}`);
+                    locationRef.child('votes').transaction(currentVotes => (currentVotes || 0) + 1);
+                    localStorage.setItem(hasVotedKey, 'true');
                 } else {
                     alert('You have already voted for this location!');
                 }
@@ -91,6 +118,7 @@
             marker.setPopup(popup);
         });
 
+        db.ref('locations').on('value', updateLeaderboard);
         updateLeaderboard();
     </script>
 </body>
