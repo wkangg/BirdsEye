@@ -9,15 +9,78 @@
 </head>
 <body>
     <div id="map"></div>
+    <div id="leaderboard">
+        <h2>Leaderboard</h2>
+        <ol id="leaderboard-list"></ol>
+    </div>
+
     <script src="https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js"></script>
     <script>
         mapboxgl.accessToken = 'pk.eyJ1Ijoid2thbmdnIiwiYSI6ImNtNjFtdGFkbjBvejQybm9rdXpiYnYwc2MifQ.b0RaasJ_7-SKrZ4ou0HSGw';
-        var map = new mapboxgl.Map({
+        const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/streets-v11',
-            center: [-79.399,43.6607],
+            center: [-79.399, 43.6607],
             zoom: 15
         });
+
+        const locations = [
+            {
+                coordinates: [-79.399, 43.6607],
+                photo: 'https://via.placeholder.com/150',
+                prompt: 'This is a placeholder prompt for the first location.',
+                votes: 0
+            },
+            {
+                coordinates: [-79.395, 43.659],
+                photo: 'https://via.placeholder.com/150',
+                prompt: 'This is a placeholder prompt for the second location.',
+                votes: 0
+            }
+        ];
+
+        function updateLeaderboard() {
+            const leaderboard = document.getElementById('leaderboard-list');
+            leaderboard.innerHTML = '';
+
+            locations
+                .sort((a, b) => b.votes - a.votes)
+                .forEach(location => {
+                    const li = document.createElement('li');
+                    li.textContent = `${location.prompt} - ${location.votes} votes`;
+                    leaderboard.appendChild(li);
+                });
+        }
+
+        locations.forEach((location, index) => {
+            const marker = new mapboxgl.Marker()
+                .setLngLat(location.coordinates)
+                .addTo(map);
+
+            const popupContent = document.createElement('div');
+            const photo = document.createElement('img');
+            photo.src = location.photo;
+            photo.style.width = '150px';
+            const prompt = document.createElement('p');
+            prompt.textContent = location.prompt;
+            const upvoteButton = document.createElement('button');
+            upvoteButton.textContent = 'Upvote';
+            upvoteButton.onclick = () => {
+                location.votes++;
+                updateLeaderboard();
+            };
+
+            popupContent.appendChild(photo);
+            popupContent.appendChild(prompt);
+            popupContent.appendChild(upvoteButton);
+
+            const popup = new mapboxgl.Popup({ offset: 25 })
+                .setDOMContent(popupContent);
+
+            marker.setPopup(popup);
+        });
+
+        updateLeaderboard();
     </script>
 </body>
 </html>
