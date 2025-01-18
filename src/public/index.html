@@ -26,12 +26,14 @@
 
         const locations = [
             {
+                id: 'location1',
                 coordinates: [-79.399, 43.6607],
                 photo: 'https://via.placeholder.com/150',
                 prompt: 'This is a placeholder prompt for the first location.',
                 votes: 0
             },
             {
+                id: 'location2',
                 coordinates: [-79.395, 43.659],
                 photo: 'https://via.placeholder.com/150',
                 prompt: 'This is a placeholder prompt for the second location.',
@@ -65,9 +67,18 @@
             prompt.textContent = location.prompt;
             const upvoteButton = document.createElement('button');
             upvoteButton.textContent = 'Upvote';
+            
+            // Check if the user has already voted for this location
+            const hasVotedKey = `hasVoted_${location.id}`;
+
             upvoteButton.onclick = () => {
-                location.votes++;
-                updateLeaderboard();
+                if (!localStorage.getItem(hasVotedKey)) {
+                    location.votes++;
+                    localStorage.setItem(hasVotedKey, 'true'); // Mark as voted
+                    updateLeaderboard();
+                } else {
+                    alert('You have already voted for this location!');
+                }
             };
 
             popupContent.appendChild(photo);
