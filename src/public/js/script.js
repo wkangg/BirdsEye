@@ -128,19 +128,37 @@ const updateMarkers = async () => {
 
                     fetch(`/api/getMarkerSubmissions?marker=${location._id}`)
                         .then(async res => {
+                            const photoContainer = document.querySelector('#photoContainer');
+                            photoContainer.innerHTML = "No one's posted yet, maybe you can be the first!";
+
                             const photos = await res.json();
                             if (!photos || photos.length === 0 || !res.ok) return;
 
-                            const photoContainer = document.querySelector('#photoContainer');
-                            for (let i = photoContainer.children.length - 1; i >= 0; i--) {
-                                const img = photoContainer.querySelector(`#polaroid${i+1}Image`);
-                                if (!photos[i] || !img) break;
+                            photoContainer.innerHTML = '';
+                            for (let i = photos.length - 1; i >= 0; i--) {
+                                const polaroidBg = document.createElement('div');
+                                polaroidBg.classList.add('relative', 'flex', 'flex-col', 'items-center', 'bg-white', 'shadow-lg', 'rounded-lg', 'overflow-hidden', 'p-4');
+
+                                const polaroidContainer = document.createElement('div');
+                                polaroidContainer.classList.add('relative', 'bg-gray-200', 'overflow-hidden');
+                                polaroidBg.append(polaroidContainer);
+
+                                const img = document.createElement('img');
+                                img.classList.add('w-auto', 'h-auto', 'max-w-full', 'max-h-full');
                                 img.src = `https://cdn.wkang.ca/${photos[i].photoID}`;
                                 img.addEventListener('load', () => {
                                     const constrained = constrainToAspectRatio(Math.min(window.innerWidth/6, img.naturalWidth), Math.min(window.innerHeight/2.5, img.naturalHeight), img.naturalWidth / img.naturalHeight);
-                                    photoContainer.children[i].style.width = `${constrained.x}px`;
-                                    photoContainer.children[i].style.height = `${constrained.y + 30}px`;
+                                    polaroidBg.style.width = `${constrained.x}px`;
+                                    polaroidBg.style.height = `${constrained.y + 30}px`;
                                 });
+                                polaroidContainer.append(img);
+
+                                const likeCounter = document.createElement('p');
+                                likeCounter.classList.add('mt-2', 'text-center', 'text-sm', 'font-semibold');
+                                likeCounter.textContent = `${photos[i].likes} likes`;
+                                polaroidBg.append(likeCounter);
+
+                                photoContainer.append(polaroidBg);
                             }
                         });
 
