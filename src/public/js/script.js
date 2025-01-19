@@ -80,6 +80,18 @@ imgInput.addEventListener('input', async () => {
         .finally(() => imgInput.value = '');
 });
 
+const constrainToAspectRatio = (x, y, aspectRatio) => {
+    const currentAspectRatio = x / y;
+
+    if (currentAspectRatio > aspectRatio) {
+        x = y * aspectRatio;
+    } else if (currentAspectRatio < aspectRatio) {
+        y = x / aspectRatio;
+    }
+
+    return { x, y };
+};
+
 let lastClickedMarker;
 const existingMarkers = [];
 const updateMarkers = async () => {
@@ -103,7 +115,6 @@ const updateMarkers = async () => {
                 existingMarkers.push(marker);
                 location.element = marker;
 
-                // Create a popup
                 const popup = new mapboxgl.Popup({
                     closeButton: false,
                     closeOnClick: false
@@ -122,13 +133,13 @@ const updateMarkers = async () => {
 
                             const photoContainer = document.querySelector('#photoContainer');
                             for (let i = photoContainer.children.length - 1; i >= 0; i--) {
-                                if (!photos[i]) break;
-                                const img = photoContainer.children[i].querySelector('img');
+                                const img = photoContainer.querySelector(`#polaroid${i+1}Image`);
+                                if (!photos[i] || !img) break;
                                 img.src = `https://cdn.wkang.ca/${photos[i].photoID}`;
-                                console.log('set source for', photos[i].photoID);
                                 img.addEventListener('load', () => {
-                                    photoContainer.children[i].style.width = `${img.naturalWidth}px`;
-                                    photoContainer.children[i].style.height = `${img.naturalHeight + 50}px`;
+                                    const constrained = constrainToAspectRatio(Math.min(window.innerWidth/6, img.naturalWidth), Math.min(window.innerHeight/2.5, img.naturalHeight), img.naturalWidth / img.naturalHeight);
+                                    photoContainer.children[i].style.width = `${constrained.x}px`;
+                                    photoContainer.children[i].style.height = `${constrained.y + 30}px`;
                                 });
                             }
                         });
@@ -160,18 +171,6 @@ const updateMarkers = async () => {
             });
         })
         .catch(error => toastError(error));
-};
-
-const constrainToAspectRatio = (x, y, aspectRatio) => {
-    const currentAspectRatio = x / y;
-
-    if (currentAspectRatio > aspectRatio) {
-        x = y * aspectRatio;
-    } else if (currentAspectRatio < aspectRatio) {
-        y = x / aspectRatio;
-    }
-
-    return { x, y };
 };
 
 const resizeAddPhotoBtn = () => {
