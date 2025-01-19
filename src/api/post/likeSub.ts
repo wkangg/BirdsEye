@@ -27,7 +27,7 @@ export default app.post('/api/likeSub', requiresAuth(), async (req, res) => {
             submission.likes.push(req.oidc.user.sub);
         }
         await submission.save();
-        res.status(200).send(submission.likes.length.toString());
+        res.status(200).send(`${submission.likes.length.toString()},${submission.likes.includes(req.oidc.user.sub)}`);
         return;
     } catch (error) {
         console.log(error.stack ?? error);

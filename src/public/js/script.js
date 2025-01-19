@@ -159,8 +159,8 @@ const updateMarkers = async () => {
                                 polaroidContainer.append(img);
 
                                 const uploader = document.createElement('p');
-                                uploader.classList.add('mt-2', 'text-left', 'text-lg', 'font-semibold', 'text-black', 'w-full');
-                                uploader.textContent = `${photos.subs[i].username} - ${objectIdToDate(photos.subs[i]._id).toLocaleDateString('en-US')}`;
+                                uploader.classList.add('mt-2', 'text-left', 'text-lg', 'font-semibold', 'text-black', 'w-3/4');
+                                uploader.textContent = `${photos.subs[i].username} - ${objectIdToDate(photos.subs[i]._id).toLocaleDateString('en-US')} (${photos.subs[i].likes.length} like${photos.subs[i].likes.length === 1 ? '' : 's'})`;
                                 polaroidBg.append(uploader);
 
                                 const likeBtn = document.createElement('img');
@@ -172,10 +172,12 @@ const updateMarkers = async () => {
                                         method: 'POST'
                                     })
                                         .then(async response => {
-                                            if (!response.ok) return toastError(await response.text());
-                                            console.log(await response.text());
-                                            likeBtn.src = '/assets/hearted.svg';
-                                            uploader.textContent = `${photos.subs[i].username} - ${objectIdToDate(photos.subs[i]._id).toLocaleDateString('en-US')} (${photos.subs[i].likes + 1})`;
+                                            const data = await response.text();
+                                            if (!response.ok) return toastError(data);
+                                            console.log(data);
+                                            const [likes, liked] = data.split(',');
+                                            likeBtn.src = liked == 'true' ? '/assets/hearted.svg' : '/assets/unhearted.svg';
+                                            uploader.textContent = `${photos.subs[i].username} - ${objectIdToDate(photos.subs[i]._id).toLocaleDateString('en-US')} (${likes} like${likes === '1' ? '' : 's'})`;
                                         })
                                         .catch(error => toastError(error));
                                 });
