@@ -78,7 +78,8 @@ imgInput.addEventListener('input', async () => {
                 body: imgInput.files[0]
             })
                 .then(async response => {
-                    toastError(response.ok ? 'File uploaded successfully (this is temporary)' : await response.text());
+                    if (!response.ok) return toastError(await response.text());
+                    refreshPhotoContainer(lastClickedMarker._id);
                 });
         })
         .catch(error => toastError(error))
@@ -95,6 +96,64 @@ const constrainToAspectRatio = (x, y, aspectRatio) => {
     }
 
     return { x, y };
+};
+
+const refreshPhotoContainer = markerID => {
+    fetch(`/api/getMarkerSubmissions?marker=${markerID}`)
+        .then(async res => {
+            const photoContainer = document.querySelector('#photoContainer');
+            photoContainer.innerHTML = "No one's posted yet, maybe you can be the first!";
+
+            const photos = await res.json();
+            if (!photos || photos.subs.length === 0 || !res.ok) return;
+
+            photoContainer.innerHTML = '';
+            for (let i = photos.subs.length - 1; i >= 0; i--) {
+                const polaroidBg = document.createElement('div');
+                polaroidBg.classList.add('relative', 'flex', 'flex-col', 'items-center', 'bg-white', 'shadow-lg', 'rounded-lg', 'overflow-hidden', 'p-4');
+
+                const polaroidContainer = document.createElement('div');
+                polaroidContainer.classList.add('relative', 'bg-gray-200', 'overflow-hidden');
+                polaroidBg.append(polaroidContainer);
+
+                const img = document.createElement('img');
+                img.classList.add('w-auto', 'h-auto', 'max-w-full', 'max-h-full');
+                img.src = `https://cdn.wkang.ca/${photos.subs[i].photoID}`;
+                img.addEventListener('load', () => {
+                    const constrained = constrainToAspectRatio(Math.min(window.innerWidth/6, img.naturalWidth), Math.min(window.innerHeight/2.5, img.naturalHeight), img.naturalWidth / img.naturalHeight);
+                    polaroidBg.style.width = `${constrained.x}px`;
+                    polaroidBg.style.height = `${constrained.y + 30}px`;
+                });
+                polaroidContainer.append(img);
+
+                const uploader = document.createElement('p');
+                uploader.classList.add('mt-2', 'text-left', 'text-lg', 'font-semibold', 'text-black', 'w-3/4');
+                uploader.textContent = `${photos.subs[i].username} - ${objectIdToDate(photos.subs[i]._id).toLocaleDateString('en-US')} (${photos.subs[i].likes.length} like${photos.subs[i].likes.length === 1 ? '' : 's'})`;
+                polaroidBg.append(uploader);
+
+                const likeBtn = document.createElement('img');
+                likeBtn.classList.add('absolute', 'bottom-0', 'right-0', 'w-8', 'h-8', 'm-2');
+                likeBtn.src = photos.subs[i].likes?.includes(photos.me) ? '/assets/hearted.svg' : '/assets/unhearted.svg';
+                likeBtn.style.cursor = 'pointer';
+                likeBtn.addEventListener('click', () => {
+                    fetch(`/api/likeSub?ID=${photos.subs[i]._id}`, {
+                        method: 'POST'
+                    })
+                        .then(async response => {
+                            const data = await response.text();
+                            if (!response.ok) return toastError(data);
+                            console.log(data);
+                            const [likes, liked] = data.split(',');
+                            likeBtn.src = liked == 'true' ? '/assets/hearted.svg' : '/assets/unhearted.svg';
+                            uploader.textContent = `${photos.subs[i].username} - ${objectIdToDate(photos.subs[i]._id).toLocaleDateString('en-US')} (${likes} like${likes === '1' ? '' : 's'})`;
+                        })
+                        .catch(error => toastError(error));
+                });
+                polaroidBg.append(likeBtn);
+
+                photoContainer.append(polaroidBg);
+            }
+        });
 };
 
 let lastClickedMarker;
@@ -131,62 +190,7 @@ const updateMarkers = async () => {
                     lastClickedMarker = location;
                     prompt.innerHTML = `${escapeHTML(location.prompt)}<br><span class="text-2xl">${objectIdToDate(location._id).toLocaleDateString('en-US')}</span>`;
 
-                    fetch(`/api/getMarkerSubmissions?marker=${location._id}`)
-                        .then(async res => {
-                            const photoContainer = document.querySelector('#photoContainer');
-                            photoContainer.innerHTML = "No one's posted yet, maybe you can be the first!";
-
-                            const photos = await res.json();
-                            if (!photos || photos.subs.length === 0 || !res.ok) return;
-
-                            photoContainer.innerHTML = '';
-                            for (let i = photos.subs.length - 1; i >= 0; i--) {
-                                const polaroidBg = document.createElement('div');
-                                polaroidBg.classList.add('relative', 'flex', 'flex-col', 'items-center', 'bg-white', 'shadow-lg', 'rounded-lg', 'overflow-hidden', 'p-4');
-
-                                const polaroidContainer = document.createElement('div');
-                                polaroidContainer.classList.add('relative', 'bg-gray-200', 'overflow-hidden');
-                                polaroidBg.append(polaroidContainer);
-
-                                const img = document.createElement('img');
-                                img.classList.add('w-auto', 'h-auto', 'max-w-full', 'max-h-full');
-                                img.src = `https://cdn.wkang.ca/${photos.subs[i].photoID}`;
-                                img.addEventListener('load', () => {
-                                    const constrained = constrainToAspectRatio(Math.min(window.innerWidth/6, img.naturalWidth), Math.min(window.innerHeight/2.5, img.naturalHeight), img.naturalWidth / img.naturalHeight);
-                                    polaroidBg.style.width = `${constrained.x}px`;
-                                    polaroidBg.style.height = `${constrained.y + 30}px`;
-                                });
-                                polaroidContainer.append(img);
-
-                                const uploader = document.createElement('p');
-                                uploader.classList.add('mt-2', 'text-left', 'text-lg', 'font-semibold', 'text-black', 'w-3/4');
-                                uploader.textContent = `${photos.subs[i].username} - ${objectIdToDate(photos.subs[i]._id).toLocaleDateString('en-US')} (${photos.subs[i].likes.length} like${photos.subs[i].likes.length === 1 ? '' : 's'})`;
-                                polaroidBg.append(uploader);
-
-                                const likeBtn = document.createElement('img');
-                                likeBtn.classList.add('absolute', 'bottom-0', 'right-0', 'w-8', 'h-8', 'm-2');
-                                likeBtn.src = photos.subs[i].likes?.includes(photos.me) ? '/assets/hearted.svg' : '/assets/unhearted.svg';
-                                likeBtn.style.cursor = 'pointer';
-                                likeBtn.addEventListener('click', () => {
-                                    fetch(`/api/likeSub?ID=${photos.subs[i]._id}`, {
-                                        method: 'POST'
-                                    })
-                                        .then(async response => {
-                                            const data = await response.text();
-                                            if (!response.ok) return toastError(data);
-                                            console.log(data);
-                                            const [likes, liked] = data.split(',');
-                                            likeBtn.src = liked == 'true' ? '/assets/hearted.svg' : '/assets/unhearted.svg';
-                                            uploader.textContent = `${photos.subs[i].username} - ${objectIdToDate(photos.subs[i]._id).toLocaleDateString('en-US')} (${likes} like${likes === '1' ? '' : 's'})`;
-                                        })
-                                        .catch(error => toastError(error));
-                                });
-                                polaroidBg.append(likeBtn);
-
-                                photoContainer.append(polaroidBg);
-                            }
-                        });
-
+                    refreshPhotoContainer(location._id);
                     toggleMenu();
 
                     const bounding = customMarker.getBoundingClientRect();
