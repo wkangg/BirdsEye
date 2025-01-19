@@ -137,10 +137,10 @@ const updateMarkers = async () => {
                             photoContainer.innerHTML = "No one's posted yet, maybe you can be the first!";
 
                             const photos = await res.json();
-                            if (!photos || photos.length === 0 || !res.ok) return;
+                            if (!photos || photos.subs.length === 0 || !res.ok) return;
 
                             photoContainer.innerHTML = '';
-                            for (let i = photos.length - 1; i >= 0; i--) {
+                            for (let i = photos.subs.length - 1; i >= 0; i--) {
                                 const polaroidBg = document.createElement('div');
                                 polaroidBg.classList.add('relative', 'flex', 'flex-col', 'items-center', 'bg-white', 'shadow-lg', 'rounded-lg', 'overflow-hidden', 'p-4');
 
@@ -150,7 +150,7 @@ const updateMarkers = async () => {
 
                                 const img = document.createElement('img');
                                 img.classList.add('w-auto', 'h-auto', 'max-w-full', 'max-h-full');
-                                img.src = `https://cdn.wkang.ca/${photos[i].photoID}`;
+                                img.src = `https://cdn.wkang.ca/${photos.subs[i].photoID}`;
                                 img.addEventListener('load', () => {
                                     const constrained = constrainToAspectRatio(Math.min(window.innerWidth/6, img.naturalWidth), Math.min(window.innerHeight/2.5, img.naturalHeight), img.naturalWidth / img.naturalHeight);
                                     polaroidBg.style.width = `${constrained.x}px`;
@@ -159,9 +159,27 @@ const updateMarkers = async () => {
                                 polaroidContainer.append(img);
 
                                 const uploader = document.createElement('p');
-                                uploader.classList.add('mt-2', 'text-center', 'text-lg', 'font-semibold', 'text-black', 'w-full');
-                                uploader.textContent = `${photos[i].username} - ${objectIdToDate(photos[i]._id).toLocaleDateString('en-US')}`;
+                                uploader.classList.add('mt-2', 'text-left', 'text-lg', 'font-semibold', 'text-black', 'w-full');
+                                uploader.textContent = `${photos.subs[i].username} - ${objectIdToDate(photos.subs[i]._id).toLocaleDateString('en-US')}`;
                                 polaroidBg.append(uploader);
+
+                                const likeBtn = document.createElement('img');
+                                likeBtn.classList.add('absolute', 'bottom-0', 'right-0', 'w-8', 'h-8', 'm-2');
+                                likeBtn.src = photos.subs[i].likes?.includes(photos.me) ? '/assets/hearted.svg' : '/assets/unhearted.svg';
+                                likeBtn.style.cursor = 'pointer';
+                                likeBtn.addEventListener('click', () => {
+                                    fetch(`/api/likeSub?ID=${photos.subs[i]._id}`, {
+                                        method: 'POST'
+                                    })
+                                        .then(async response => {
+                                            if (!response.ok) return toastError(await response.text());
+                                            console.log(await response.text());
+                                            likeBtn.src = '/assets/hearted.svg';
+                                            uploader.textContent = `${photos.subs[i].username} - ${objectIdToDate(photos.subs[i]._id).toLocaleDateString('en-US')} (${photos.subs[i].likes + 1})`;
+                                        })
+                                        .catch(error => toastError(error));
+                                });
+                                polaroidBg.append(likeBtn);
 
                                 photoContainer.append(polaroidBg);
                             }

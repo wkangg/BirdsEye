@@ -3,6 +3,7 @@ import express from 'express';
 import { auth } from 'express-openid-connect';
 import multer from 'multer';
 import bodyParser from 'body-parser';
+// import cron from 'node-cron';
 import { setupDB } from './db.ts';
 import { initRoutes } from './routes.ts';
 
@@ -39,6 +40,28 @@ initRoutes();
 
 const port = process.env.PORT ?? 3000;
 app.listen(port, () => console.log(`\nlistening on port ${port}\nvisit ${app.get('env') === 'production' ? 'https://prettyplease.work/' : 'http://localhost'}:${port}\n----------------------------`));
+
+// async function queryGemini() {
+//     fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ contents: [{
+//             parts: [{ text: 'Come up with a unique idea for a photo at the University of Toronto, output as JSON with latitude and longitude and your prompt to take a picture at that location. Try to keep the prompt less than 5 words, but still be clear and don\'t give out riddles. Don\'t use words like photograph, take a picture of, capture, show, etc. Just say the topic. Make sure the location coordinates actually make sense for the prompt. Here is an example: {lat: 43.6485, lng: -79.3853, prompt: "Harbourfront"}' }]
+//         }] })
+//     })
+//         .then(async response => {
+//             if (!response.ok) console.warn(`HTTP ${response.status}: ${response.statusText}`);
+//             const data = await response.json();
+
+//             console.log(data.candidates[0].content);
+//         });
+// }
+
+// cron.schedule('0 * * * *', () => {
+//     console.log('Running hourly Gemini query at', new Date().toISOString());
+//     queryGemini();
+// });
+// queryGemini();
 
 process.on('unhandledRejection', (err: Error) => console.warn(`UNHANDLED REJECTION:\n${err.stack ?? err}`));
 process.on('uncaughtException', (err: Error) => {

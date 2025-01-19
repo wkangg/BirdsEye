@@ -8,7 +8,7 @@ export default app.get('/api/getMarkerSubmissions', async (req, res) => {
     }
 
     Submission.find({ markerID: req.query.marker }).then(subs => {
-        res.status(200).send(subs);
+        res.status(200).send({ me: req.oidc.user?.sub, subs });
     }).catch(error => {
         console.log(error.stack ?? error);
         res.status(500).send(error);
