@@ -153,10 +153,10 @@ const updateMarkers = async () => {
                                 });
                                 polaroidContainer.append(img);
 
-                                const likeCounter = document.createElement('p');
-                                likeCounter.classList.add('mt-2', 'text-center', 'text-sm', 'font-semibold');
-                                likeCounter.textContent = `${photos[i].likes} likes`;
-                                polaroidBg.append(likeCounter);
+                                const uploader = document.createElement('p');
+                                uploader.classList.add('mt-2', 'text-center', 'text-sm', 'font-semibold');
+                                uploader.textContent = `${photos[i].username}`;
+                                polaroidBg.append(uploader);
 
                                 photoContainer.append(polaroidBg);
                             }
