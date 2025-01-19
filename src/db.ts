@@ -18,6 +18,7 @@ const markerSchema = new mongoose.Schema({
 
 const submissionsSchema = new mongoose.Schema({
     userID: { type: String, required: true },
+    username: { type: String, required: true },
     markerID: { type: String, required: true },
     photoID: { type: String, required: true },
     likes: { type: Number, default: 0 }

@@ -58,12 +58,12 @@ const objectIdToDate = objectId => {
 const addPhotoPressed = () => imgInput.click();
 imgInput.addEventListener('input', async () => {
     if (!imgInput.files[0]) return;
-    fetch('/api/upload', {
+    fetch(`/api/upload?marker=${lastClickedMarker?._id ?? ''}`, {
         method: 'GET'
     })
         .then(async response => {
             const data = await response.text();
-            if (response.status != 200) document.body.innerHTML = data;
+            if (!response.ok) return toastError(data);
 
             fetch(data, {
                 method: 'PUT',
@@ -101,6 +101,7 @@ const updateMarkers = async () => {
                     .setLngLat([location.lng, location.lat])
                     .addTo(map);
                 existingMarkers.push(marker);
+                location.element = marker;
 
                 // Create a popup
                 const popup = new mapboxgl.Popup({
@@ -111,8 +112,27 @@ const updateMarkers = async () => {
                 customMarker.addEventListener('mouseenter', () => popup.setLngLat([location.lng, location.lat]).addTo(map));
                 customMarker.addEventListener('mouseleave', () => popup.remove());
                 customMarker.addEventListener('click', () => {
-                    lastClickedMarker = customMarker;
+                    lastClickedMarker = location;
                     prompt.innerHTML = `${escapeHTML(location.prompt)}<br><span class="text-2xl">${objectIdToDate(location._id).toLocaleDateString('en-US')}</span>`;
+
+                    fetch(`/api/getMarkerSubmissions?marker=${location._id}`)
+                        .then(async res => {
+                            const photos = await res.json();
+                            if (!photos || photos.length === 0 || !res.ok) return;
+
+                            const photoContainer = document.querySelector('#photoContainer');
+                            for (let i = photoContainer.children.length - 1; i >= 0; i--) {
+                                if (!photos[i]) break;
+                                const img = photoContainer.children[i].querySelector('img');
+                                img.src = `https://cdn.wkang.ca/${photos[i].photoID}`;
+                                console.log('set source for', photos[i].photoID);
+                                img.addEventListener('load', () => {
+                                    photoContainer.children[i].style.width = `${img.naturalWidth}px`;
+                                    photoContainer.children[i].style.height = `${img.naturalHeight + 50}px`;
+                                });
+                            }
+                        });
+
                     toggleMenu();
 
                     const bounding = customMarker.getBoundingClientRect();
@@ -185,14 +205,15 @@ const toggleMenu = event => {
     if (addPhotoBtn) {
         setTimeout(() => {
             addPhotoBtn.style.transition = 'all 0.3s ease-in-out';
-            const bounding = lastClickedMarker.getBoundingClientRect();
-            const translation = lastClickedMarker.style.transform.match(/translate\(([^,]+),([^,]+)\)/);
+            const bounding = lastClickedMarker.element._element.getBoundingClientRect();
+            const translation = lastClickedMarker.element._element.style.transform.match(/translate\(([^,]+),([^,]+)\)/);
             const translationX = translation[1].slice(0, -2);
             const translationY = translation[2].slice(0, -2);
             addPhotoBtn.style.left = translationX - bounding.width / 2 + 'px';
             addPhotoBtn.style.top = translationY - bounding.height / 2 + 'px';
             addPhotoBtn.style.width = '24px';
             addPhotoBtn.style.height = '34px';
+            lastClickedMarker = null;
         }, 0);
         setTimeout(() => {
             addPhotoBtn.remove();

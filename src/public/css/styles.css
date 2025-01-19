@@ -43,8 +43,13 @@ img {
     background-color: #AE9674;
 }
 
+.mapboxgl-popup {
+    pointer-events: none;
+}
+
 .mapboxgl-popup-content {
     background-color: rgba(39, 38, 38, 0.9);
+    pointer-events: none;
 }
 
 .mapboxgl-popup-tip {
