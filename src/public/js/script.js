@@ -32,6 +32,8 @@ const toastError = err => {
     }).showToast();
 };
 
+const isLoggedIn = document.body.dataset.loggedIn === 'true';
+
 navigator.geolocation.getCurrentPosition(position => {
     pos = position.coords;
     if (map) {
@@ -55,7 +57,10 @@ const objectIdToDate = objectId => {
     return new Date(timestamp * 1000);
 };
 
-const addPhotoPressed = () => imgInput.click();
+const addPhotoPressed = () => {
+    if (!isLoggedIn) return toastError('You must be logged in to upload photos');
+    imgInput.click();
+};
 imgInput.addEventListener('input', async () => {
     if (!imgInput.files[0]) return;
     fetch(`/api/upload?marker=${lastClickedMarker?._id ?? ''}`, {
@@ -154,8 +159,8 @@ const updateMarkers = async () => {
                                 polaroidContainer.append(img);
 
                                 const uploader = document.createElement('p');
-                                uploader.classList.add('mt-2', 'text-center', 'text-sm', 'font-semibold');
-                                uploader.textContent = `${photos[i].username}`;
+                                uploader.classList.add('mt-2', 'text-center', 'text-lg', 'font-semibold', 'text-black', 'w-full');
+                                uploader.textContent = `${photos[i].username} - ${objectIdToDate(photos[i]._id).toLocaleDateString('en-US')}`;
                                 polaroidBg.append(uploader);
 
                                 photoContainer.append(polaroidBg);

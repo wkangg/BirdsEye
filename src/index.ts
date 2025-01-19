@@ -20,6 +20,8 @@ export const r2 = new S3Client({
 
 if (app.get('env') === 'production') app.set('trust proxy', 1);
 
+app.set('view engine', 'ejs');
+app.set('views', 'src/views');
 app.use(auth({
     authRequired: false,
     auth0Logout: true,
@@ -30,6 +32,7 @@ app.use(auth({
 }));
 app.use(bodyParser.json());
 app.use(express.static('src/public'));
+app.get('/', (req, res) => res.render('index', { isLoggedIn: req.oidc.isAuthenticated() }));
 
 setupDB();
 initRoutes();
