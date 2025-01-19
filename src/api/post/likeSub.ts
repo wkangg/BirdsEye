@@ -1,10 +1,9 @@
 import { app } from '../../index.ts';
-import { requiresAuth } from 'express-openid-connect';
 import { Submission } from '../../db.ts';
 
-export default app.post('/api/likeSub', requiresAuth(), async (req, res) => {
+export default app.post('/api/likeSub', async (req, res) => {
     if (!req.oidc.isAuthenticated() || !req.oidc.user) {
-        res.status(401).send('Unauthorized');
+        res.status(401).send('You must be logged in to like submissions');
         return;
     }
     if (!req.query.ID) {
