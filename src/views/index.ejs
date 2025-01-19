@@ -21,6 +21,11 @@
     <main class="relative w-screen h-screen">
         <div id="map" class="absolute inset-0"></div>
 
+        <div id="nearme" class="absolute top-5 right-5 w-64 bg-gruy bg-opacity-90 rounded-lg shadow-md transform p-4 z-10 hidden transition-transform duration-300">
+            <h2 class="m-0 mb-2 text-lg text-center text-white">Prompts Near Me</h2>
+            <ol id="nearme-list" class="list-none m-0 p-0 max-h-52 overflow-y-auto"></ol>
+          </div>
+
         <div id="menu" class="p-4 absolute top-0 left-0 z-10 h-screen w-1/2 transform -translate-x-full transition-transform duration-300">
             <img src="assets/logo.png" alt="SnapQuest Logo" class="h-12 mx-auto sm:h-16" draggable="false">
 

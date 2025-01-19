@@ -12,6 +12,8 @@ const menu = document.querySelector('#menu');
 const prompt = menu.querySelector('#prompt');
 const blurElement = document.querySelector('#blur');
 const imgInput = document.querySelector('#imgInput');
+const nearme = document.querySelector('#nearme');
+const nearmeList = nearme.querySelector('#nearme-list');
 const toastError = err => {
     if (!err) return;
     const message = err.stack ?? err.message ?? err;
@@ -34,6 +36,18 @@ const toastError = err => {
 
 const isLoggedIn = document.body.dataset.loggedIn === 'true';
 
+const measure = (lat1, lon1, lat2, lon2) => {
+    const R = 6378.137; // Radius of earth in KM
+    const dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
+    const dLon = lon2 * Math.PI / 180 - lon1 * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2)
+      + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180)
+      * Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const d = R * c;
+    return d * 1000; // meters
+};
+
 navigator.geolocation.getCurrentPosition(position => {
     pos = position.coords;
     if (map) {
@@ -42,6 +56,37 @@ navigator.geolocation.getCurrentPosition(position => {
             zoom: 15 - position.coords.accuracy / 100
         });
     }
+    nearme.classList.remove('hidden');
+
+    fetch('/api/getMarkers')
+        .then(async res => {
+            const markers = await res.json();
+            if (!markers) return;
+            if (markers.error) return toastError(markers.error);
+
+            markers.forEach(location => {
+                const distance = Math.hypot(pos.latitude - location.lat, pos.longitude - location.lng);
+                location.distance = distance;
+            });
+
+            markers.sort((a, b) => a.distance - b.distance);
+            console.log(markers);
+            markers.forEach(location => {
+                const item = document.createElement('li');
+                item.classList.add('p-2', 'border-b', 'border-gray-300', 'text-sm', 'cursor-pointer');
+                const meters = Math.round(measure(pos.latitude, pos.longitude, location.lat, location.lng));
+                item.textContent = `${location.prompt} - ${meters > 1000 ? meters/1000 : meters} ${meters > 1000 ? 'kilo' : ''}metres`;
+
+                item.addEventListener('click', () => {
+                    map.flyTo({
+                        center: [location.lng, location.lat],
+                        zoom: 15
+                    });
+                });
+
+                nearmeList.append(item);
+            });
+        });
 }, error => toastError(error));
 
 const escapeHTML = str => str
@@ -247,6 +292,7 @@ document.addEventListener('fullscreenchange', resizeAddPhotoBtn, false);
 const toggleMenu = event => {
     if (event && (event.srcElement === imgInput || event.srcElement === addPhotoBtn)) return;
     menu.classList.toggle('-translate-x-full');
+    nearme.classList.toggle('translate-x-[120%]');
     blurElement.classList.toggle('hidden');
     if (addPhotoBtn) {
         setTimeout(() => {
