@@ -64,7 +64,7 @@ const queryGemini = async () => {
 
 cron.schedule('0 */3 * * *', () => {
     console.log('Running every 3 hours Gemini query at', new Date().toISOString());
-    queryGemini();
+    if (!process.env.DISABLE_AI) queryGemini();
 });
 
 process.on('unhandledRejection', (err: Error) => console.warn(`UNHANDLED REJECTION:\n${err.stack ?? err}`));
