@@ -1,7 +1,7 @@
 # SnapQuest
+### A [UofTHacks12](https://uofthacks.com/) Project
 
-### It's like Pokemon Go and Pokemon Snap, but for photographers and explorers!
-#### A UofTHacks12 Project
+### [Try it out!](https://prettyplease.work/) | [DoraHacks](https://dorahacks.io/buidl/21647/)
 
 ## Technologies
 - [![Oracle](https://img.shields.io/badge/Oracle-F80000?style=for-the-badge&logo=oracle&logoColor=black)](#)

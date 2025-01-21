@@ -12,8 +12,7 @@ export const setupDB = async () => {
 const markerSchema = new mongoose.Schema({
     lat: { type: Number, required: true },
     lng: { type: Number, required: true },
-    prompt: { type: String, required: true },
-    submissions: { type: [String], default: [] } // array of photo IDs
+    prompt: { type: String, required: true }
 });
 
 const submissionsSchema = new mongoose.Schema({
