@@ -14,6 +14,7 @@ const blurElement = document.querySelector('#blur');
 const imgInput = document.querySelector('#imgInput');
 const nearme = document.querySelector('#nearme');
 const nearmeList = nearme.querySelector('#nearme-list');
+const photoContainer = document.querySelector('#photoContainer');
 const toastError = err => {
     if (!err) return;
     const message = err.stack ?? err.message ?? err;
@@ -70,7 +71,6 @@ navigator.geolocation.getCurrentPosition(position => {
             });
 
             markers.sort((a, b) => a.distance - b.distance);
-            console.log(markers);
             markers.forEach(location => {
                 const item = document.createElement('li');
                 item.classList.add('p-2', 'border-b', 'border-gray-300', 'text-sm', 'cursor-pointer');
@@ -100,6 +100,25 @@ const objectIdToDate = objectId => {
     const hexTimestamp = objectId.slice(0, 8);
     const timestamp = parseInt(hexTimestamp, 16);
     return new Date(timestamp * 1000);
+};
+
+const formatDate = date => {
+    const options = {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+    };
+
+    const currentYear = new Date().getFullYear();
+    const year = date.getFullYear();
+
+    if (year !== currentYear) {
+        options.year = 'numeric';
+    }
+
+    return date.toLocaleString('en-US', options);
 };
 
 const addPhotoPressed = () => {
@@ -146,56 +165,66 @@ const constrainToAspectRatio = (x, y, aspectRatio) => {
 const refreshPhotoContainer = markerID => {
     fetch(`/api/getMarkerSubmissions?marker=${markerID}`)
         .then(async res => {
-            const photoContainer = document.querySelector('#photoContainer');
             photoContainer.innerHTML = "No one's posted yet, maybe you can be the first!";
 
             const photos = await res.json();
             if (!photos || photos.subs.length === 0 || !res.ok) return;
 
             photoContainer.innerHTML = '';
-            for (let i = photos.subs.length - 1; i >= 0; i--) {
+            for (const photo of photos.subs) {
                 const polaroidBg = document.createElement('div');
                 polaroidBg.classList.add('relative', 'flex', 'flex-col', 'items-center', 'bg-white', 'shadow-lg', 'rounded-lg', 'overflow-hidden', 'p-4');
+
+                const uploader = document.createElement('p');
+                uploader.classList.add('text-center', 'text-lg', 'font-semibold', 'text-black', 'w-full');
+                uploader.innerHTML = escapeHTML(photo.username);
+                polaroidBg.append(uploader);
 
                 const polaroidContainer = document.createElement('div');
                 polaroidContainer.classList.add('relative', 'bg-gray-200', 'overflow-hidden');
                 polaroidBg.append(polaroidContainer);
 
                 const img = document.createElement('img');
+                img.loading = 'lazy';
+                polaroidBg.style.width = '200px';
+                polaroidBg.style.height = '200px';
                 img.classList.add('w-auto', 'h-auto', 'max-w-full', 'max-h-full');
-                img.src = `https://cdn.wkang.ca/${photos.subs[i].photoID}`;
-                img.addEventListener('load', () => {
-                    const constrained = constrainToAspectRatio(Math.min(window.innerWidth/6, img.naturalWidth), Math.min(window.innerHeight/2.5, img.naturalHeight), img.naturalWidth / img.naturalHeight);
+                const contSize = photoContainer.getBoundingClientRect();
+                img.addEventListener('load', async () => {
+                    const constrained = constrainToAspectRatio(Math.min(contSize.width/3.35, img.naturalWidth), Math.min(contSize.height/2, img.naturalHeight), img.naturalWidth / img.naturalHeight);
                     polaroidBg.style.width = `${constrained.x}px`;
-                    polaroidBg.style.height = `${constrained.y + 30}px`;
+                    polaroidBg.style.height = `${constrained.y + 20}px`;
                 });
+                img.src = `https://cdn.wkang.ca/${photo.photoID}`;
                 polaroidContainer.append(img);
 
-                const uploader = document.createElement('p');
-                uploader.classList.add('mt-2', 'text-left', 'text-lg', 'font-semibold', 'text-black', 'w-3/4');
-                uploader.textContent = `${photos.subs[i].username} - ${objectIdToDate(photos.subs[i]._id).toLocaleDateString('en-US')} (${photos.subs[i].likes.length} like${photos.subs[i].likes.length === 1 ? '' : 's'})`;
-                polaroidBg.append(uploader);
+                const likeContainer = document.createElement('div');
+
+                const likeCount = document.createElement('p');
+                likeCount.classList.add('mt-2', 'text-left', 'text-lg', 'font-semibold', 'text-black', 'w-full');
+                likeCount.innerHTML = `${formatDate(objectIdToDate(photo._id))} (${photo.likes.length} like${photo.likes.length === 1 ? '' : 's'})`;
+                likeContainer.append(likeCount);
 
                 const likeBtn = document.createElement('img');
-                likeBtn.classList.add('absolute', 'bottom-0', 'right-0', 'w-8', 'h-8', 'm-2');
-                likeBtn.src = photos.subs[i].likes?.includes(photos.me) ? '/assets/hearted.svg' : '/assets/unhearted.svg';
-                likeBtn.style.cursor = 'pointer';
+                likeBtn.classList.add('absolute', 'bottom-0', 'right-0', 'w-8', 'h-8', 'm-4', 'cursor-pointer');
+                likeBtn.src = photo.likes?.includes(photos.me) ? '/assets/hearted.svg' : '/assets/unhearted.svg';
                 likeBtn.addEventListener('click', () => {
-                    fetch(`/api/likeSub?ID=${photos.subs[i]._id}`, {
+                    fetch(`/api/likeSub?ID=${photo._id}`, {
                         method: 'POST'
                     })
                         .then(async response => {
                             const data = await response.text();
                             if (!response.ok) return toastError(data);
-                            console.log(data);
+
                             const [likes, liked] = data.split(',');
                             likeBtn.src = liked == 'true' ? '/assets/hearted.svg' : '/assets/unhearted.svg';
-                            uploader.textContent = `${photos.subs[i].username} - ${objectIdToDate(photos.subs[i]._id).toLocaleDateString('en-US')} (${likes} like${likes === '1' ? '' : 's'})`;
+                            likeCount.innerHTML = `${formatDate(objectIdToDate(photo._id))} (${likes} like${likes == '1' ? '' : 's'})`;
                         })
                         .catch(error => toastError(error));
                 });
-                polaroidBg.append(likeBtn);
+                likeContainer.append(likeBtn);
 
+                polaroidBg.append(likeContainer);
                 photoContainer.append(polaroidBg);
             }
         });
@@ -229,31 +258,31 @@ const updateMarkers = async () => {
                     closeOnClick: false
                 }).setText(location.prompt);
 
-                customMarker.addEventListener('mouseenter', () => popup.setLngLat([location.lng, location.lat]).addTo(map));
+                customMarker.addEventListener('mouseenter', () => {
+                    const popups = document.querySelectorAll('.mapboxgl-popup');
+                    for (const old of popups) old.remove();
+                    popup.setLngLat([location.lng, location.lat]).addTo(map);
+                });
                 customMarker.addEventListener('mouseleave', () => popup.remove());
-                customMarker.addEventListener('click', () => {
+                customMarker.addEventListener('click', async () => {
                     lastClickedMarker = location;
-                    prompt.innerHTML = `${escapeHTML(location.prompt)}<br><span class="text-2xl">${objectIdToDate(location._id).toLocaleDateString('en-US')}</span>`;
+                    prompt.innerHTML = `${escapeHTML(location.prompt)}<br><span class="text-2xl">${formatDate(objectIdToDate(location._id))}</span>`;
 
-                    refreshPhotoContainer(location._id);
                     toggleMenu();
+                    refreshPhotoContainer(location._id);
 
-                    const bounding = customMarker.getBoundingClientRect();
                     addPhotoBtn = document.createElement('img');
-                    addPhotoBtn.classList.add('addBtnPurge');
-                    addPhotoBtn.style.cursor = 'pointer';
-                    addPhotoBtn.style.zIndex = '30';
+                    addPhotoBtn.classList.add('addBtnPurge', 'cursor-pointer', 'z-30', 'fixed', 'transition-all', 'duration-[400ms]', 'ease-in-out');
                     addPhotoBtn.src = '/assets/addphoto.svg';
-                    addPhotoBtn.style.position = 'fixed';
                     const translation = customMarker.style.transform.match(/translate\(([^,]+),([^,]+)\)/);
                     const translationX = translation[1].slice(0, -2);
                     const translationY = translation[2].slice(0, -2);
+                    const bounding = customMarker.getBoundingClientRect();
                     addPhotoBtn.style.left = translationX - bounding.width / 2 + 'px';
                     addPhotoBtn.style.top = translationY - bounding.height / 2 + 'px';
                     addPhotoBtn.style.width = '24px';
                     addPhotoBtn.style.height = '34px';
                     document.body.append(addPhotoBtn);
-                    addPhotoBtn.style.transition = 'all 0.4s ease-in-out';
 
                     setTimeout(() => {
                         addPhotoBtn.addEventListener('click', addPhotoPressed);
@@ -268,11 +297,11 @@ const updateMarkers = async () => {
 const resizeAddPhotoBtn = () => {
     if (!addPhotoBtn) return;
     setTimeout(() => {
-        const x = window.innerWidth/1.625;
+        const x = window.innerWidth/1.42;
         const y = window.innerHeight/7;
         addPhotoBtn.style.left = x + 'px';
         addPhotoBtn.style.top = y + 'px';
-        const constrained = constrainToAspectRatio(window.innerWidth*0.3, window.innerHeight*0.75, 24/34);
+        const constrained = constrainToAspectRatio(window.innerWidth*0.3, window.innerHeight*0.725, 24/34);
         addPhotoBtn.style.width = constrained.x+'px';
         addPhotoBtn.style.height = constrained.y+'px';
     }, 0);
@@ -296,7 +325,7 @@ const toggleMenu = event => {
     blurElement.classList.toggle('hidden');
     if (addPhotoBtn) {
         setTimeout(() => {
-            addPhotoBtn.style.transition = 'all 0.3s ease-in-out';
+            addPhotoBtn.classList.replace('duration-[400ms]', 'duration-300');
             const bounding = lastClickedMarker.element._element.getBoundingClientRect();
             const translation = lastClickedMarker.element._element.style.transform.match(/translate\(([^,]+),([^,]+)\)/);
             const translationX = translation[1].slice(0, -2);
